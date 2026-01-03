@@ -1,1 +1,3 @@
 .DS_Store
+discord/.env
+node_modules/

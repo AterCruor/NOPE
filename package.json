@@ -5,13 +5,22 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "build:reasons": "node scripts/build-reason-map.js"
+    "build:reasons": "node scripts/build-reasons.js",
+    "label:openai": "node scripts/label-reasons-openai.js",
+    "label:overkill": "node scripts/label-reasons-overkill.js",
+    "discord:register": "node discord/register-commands.js",
+    "discord:bot": "node discord/bot.js"
   },
   "author": "hotheadhacker",
   "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
+    "discord.js": "^14.16.3",
+    "dotenv": "^16.4.5",
     "express": "^4.18.2",
-    "express-rate-limit": "^7.0.0"
+    "express-rate-limit": "^7.0.0",
+    "sentiment": "^5.0.2",
+    "wink-eng-lite-web-model": "^1.8.1",
+    "wink-nlp": "^2.4.0"
   }
 }

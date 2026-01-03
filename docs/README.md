@@ -16,7 +16,7 @@ Minimal, playful static site for No-as-a-Service.
 You can preview locally by opening `docs/index.html` in a browser.
 
 ## Updating Reasons
-When you edit `data/reasons.json`, regenerate the share hashes and static copy:
+When you edit `data/reasons.json`, regenerate the static copy:
 ```
 npm run build:reasons
 ```

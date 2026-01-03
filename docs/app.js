@@ -7,9 +7,8 @@ const shareButton = document.getElementById("share-reason");
 const sharePageButton = document.getElementById("share-page");
 
 let reasons = [];
-let reasonMap = {};
-let hashByReason = {};
-let currentHash = "";
+let reasonById = {};
+let currentId = "";
 
 const setStatus = (message) => {
   statusEl.textContent = message;
@@ -25,49 +24,58 @@ const pickReason = () => {
     return;
   }
 
-  const reason = reasons[Math.floor(Math.random() * reasons.length)];
-  currentHash = hashByReason[reason] || "";
-  reasonEl.textContent = reason;
+  const entry = reasons[Math.floor(Math.random() * reasons.length)];
+  currentId = entry.id || "";
+  reasonEl.textContent = entry.reason;
 };
 
-const applyReasonFromHash = () => {
+const applyReasonFromId = () => {
   const params = new URLSearchParams(window.location.search);
-  const hash = params.get("r");
-  if (!hash || !reasonMap[hash]) {
+  const id = params.get("id");
+  if (!id || !reasonById[id]) {
     return false;
   }
 
-  currentHash = hash;
-  reasonEl.textContent = reasonMap[hash];
+  currentId = id;
+  reasonEl.textContent = reasonById[id].reason;
   return true;
 };
 
 const loadReasons = async () => {
   try {
-    const [reasonsResponse, mapResponse] = await Promise.all([
-      fetch("reasons.json"),
-      fetch("reasons-map.json"),
-    ]);
-    if (!reasonsResponse.ok || !mapResponse.ok) {
+    const reasonsResponse = await fetch("reasons.json");
+    if (!reasonsResponse.ok) {
       throw new Error("Failed to load reasons.");
     }
     reasons = await reasonsResponse.json();
-    reasonMap = await mapResponse.json();
-    hashByReason = Object.entries(reasonMap).reduce((acc, [hash, text]) => {
-      acc[text] = hash;
+    reasonById = reasons.reduce((acc, entry) => {
+      acc[entry.id] = entry;
       return acc;
     }, {});
     metaEl.textContent = `${reasons.length} reasons ready.`;
-    if (!applyReasonFromHash()) {
+    if (!applyReasonFromId()) {
       pickReason();
     }
   } catch (error) {
     reasons = [
-      "Nope. The reasons are hiding. Try again later.",
-      "Not now. The reasons went out for a coffee.",
+      {
+        id: "fallback-1",
+        reason: "Nope. The reasons are hiding. Try again later.",
+        type: "general",
+        tone: "neutral",
+        topic: "general",
+        tags: [],
+      },
+      {
+        id: "fallback-2",
+        reason: "Not now. The reasons went out for a coffee.",
+        type: "general",
+        tone: "neutral",
+        topic: "general",
+        tags: [],
+      },
     ];
-    reasonMap = {};
-    hashByReason = {};
+    reasonById = {};
     metaEl.textContent = "Offline fallback mode.";
     pickReason();
   }
@@ -126,8 +134,8 @@ const sharePage = async () => {
     return;
   }
 
-  const url = currentHash
-    ? `${window.location.origin}${window.location.pathname}?r=${currentHash}`
+  const url = currentId
+    ? `${window.location.origin}${window.location.pathname}?id=${currentId}`
     : window.location.href;
   if (navigator.share) {
     try {
