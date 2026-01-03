@@ -88,6 +88,7 @@ body {
   border-radius: 999px;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  align-self: center;
 }
 
 .accordion:hover {
