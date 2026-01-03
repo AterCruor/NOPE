@@ -258,7 +258,10 @@ const updateFilters = () => {
     options.forEach((value) => {
       const option = document.createElement("option");
       option.value = value;
-      option.textContent = value;
+      option.textContent = value
+        .split("-")
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" ");
       select.appendChild(option);
     });
   };
