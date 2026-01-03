@@ -43,10 +43,10 @@ const getFilteredReasons = () => {
 const updateMeta = () => {
   const filtered = getFilteredReasons();
   if (filtered.length === reasons.length) {
-    metaEl.textContent = `${reasons.length} reasons ready.`;
+    metaEl.innerHTML = `${reasons.length} reasons ready.`;
     return;
   }
-  metaEl.textContent = `${reasons.length} reasons ready. ${filtered.length} match filters.`;
+  metaEl.innerHTML = `${reasons.length} reasons ready.<br>${filtered.length} match filters.`;
 };
 
 const pickReason = () => {
