@@ -23,15 +23,21 @@
         <div class="filters">
           <label class="filter">
             <span>Type</span>
-            <select id="filter-type"></select>
+            <select id="filter-type" class="select-pill"></select>
           </label>
           <label class="filter">
             <span>Tone</span>
-            <select id="filter-tone"></select>
+            <select id="filter-tone" class="select-glaze"></select>
           </label>
           <label class="filter">
             <span>Topic</span>
-            <select id="filter-topic"></select>
+            <select id="filter-topic" class="select-outline"></select>
+          </label>
+          <label class="filter">
+            <span>Demo</span>
+            <select id="filter-demo" class="select-card">
+              <option>Demo</option>
+            </select>
           </label>
           <button class="btn ghost small" id="clear-filters">Clear</button>
         </div>
@@ -47,18 +53,20 @@
           <button class="btn ghost" id="share-page">Share Page</button>
         </div>
 
-        <p class="powered based-on">
-          Based on
-          <a href="https://github.com/hotheadhacker/no-as-a-service" target="_blank" rel="noreferrer">
-            no-as-a-service
-          </a>
-        </p>
-        <p class="powered developed-by">
-          Developed by
-          <a href="https://github.com/AterCruor" target="_blank" rel="noreferrer">
-            AterCruor
-          </a>
-        </p>
+        <div class="footer-links">
+          <p class="powered">
+            Based on
+            <a href="https://github.com/hotheadhacker/no-as-a-service" target="_blank" rel="noreferrer">
+              no-as-a-service
+            </a>
+          </p>
+          <p class="powered">
+            Developed by
+            <a href="https://github.com/AterCruor" target="_blank" rel="noreferrer">
+              AterCruor
+            </a>
+          </p>
+        </div>
         <p class="status" id="status"></p>
       </section>
     </main>
