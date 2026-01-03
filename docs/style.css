@@ -1,0 +1,145 @@
+:root {
+  color-scheme: light;
+  --bg-1: #f5efe6;
+  --bg-2: #f7d9c4;
+  --ink: #1e1a17;
+  --accent: #e55a2a;
+  --accent-dark: #b53f1b;
+  --card: #fff7f0;
+  --shadow: rgba(30, 26, 23, 0.12);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Space Grotesk", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 15% 20%, rgba(229, 90, 42, 0.25), transparent 40%),
+    radial-gradient(circle at 85% 10%, rgba(181, 63, 27, 0.22), transparent 45%),
+    linear-gradient(135deg, var(--bg-1), var(--bg-2));
+  display: grid;
+  place-items: center;
+  padding: 32px 16px;
+}
+
+.page {
+  width: min(720px, 100%);
+}
+
+.card {
+  background: var(--card);
+  border-radius: 28px;
+  padding: 36px;
+  box-shadow: 0 20px 60px var(--shadow);
+  border: 2px solid rgba(30, 26, 23, 0.08);
+  animation: rise 0.7s ease-out;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 12px;
+  margin: 0 0 12px;
+  color: rgba(30, 26, 23, 0.55);
+}
+
+.title {
+  font-size: clamp(32px, 5vw, 44px);
+  margin: 0 0 8px;
+}
+
+.subtitle {
+  margin: 0 0 24px;
+  color: rgba(30, 26, 23, 0.7);
+  font-size: 18px;
+}
+
+.reason {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 24px;
+  font-size: 20px;
+  line-height: 1.5;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  box-shadow: inset 0 0 0 1px rgba(30, 26, 23, 0.08);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btn {
+  border: none;
+  background: var(--accent);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 12px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 8px 18px rgba(229, 90, 42, 0.3);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(229, 90, 42, 0.35);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.btn.ghost {
+  background: transparent;
+  color: var(--accent-dark);
+  border: 2px solid rgba(181, 63, 27, 0.35);
+  box-shadow: none;
+}
+
+.meta {
+  margin-top: 16px;
+  font-size: 13px;
+  color: rgba(30, 26, 23, 0.6);
+}
+
+.status {
+  margin-top: 6px;
+  font-size: 13px;
+  text-align: center;
+  color: #c63b2f;
+  min-height: 18px;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 520px) {
+  .card {
+    padding: 28px;
+  }
+
+  .reason {
+    font-size: 18px;
+  }
+}
