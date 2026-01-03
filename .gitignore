@@ -1,3 +1,8 @@
 .DS_Store
 discord/.env
 node_modules/
+data/OLDreasons.json
+data/reasonsBasic.json
+data/reasonsPhrase.json
+data/reasonsToken.json
+data/reasonsOverkill.json
