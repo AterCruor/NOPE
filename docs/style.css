@@ -80,11 +80,18 @@ body {
   width: 100%;
   padding: 8px 10px;
   border-radius: 10px;
-  border: 1px solid rgba(30, 26, 23, 0.15);
-  background: #fff;
+  border: 2px solid rgba(181, 63, 27, 0.35);
+  background: rgba(255, 247, 240, 0.9);
   font-family: "Space Grotesk", sans-serif;
   font-size: 14px;
   color: var(--ink);
+}
+
+.filter select:focus,
+.filter input:focus {
+  outline: none;
+  border-color: var(--accent-dark);
+  box-shadow: 0 0 0 2px rgba(229, 90, 42, 0.15);
 }
 
 .btn.small {
