@@ -69,6 +69,11 @@ body {
   margin-bottom: 20px;
 }
 
+.accordion-wrap {
+  display: flex;
+  justify-content: center;
+}
+
 .filters.open {
   display: grid;
 }
