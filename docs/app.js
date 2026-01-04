@@ -11,6 +11,7 @@ const topicSelect = document.getElementById("filter-topic");
 const clearFiltersButton = document.getElementById("clear-filters");
 const filterToggle = document.getElementById("filter-toggle");
 const filters = document.getElementById("filters");
+const filterChips = document.getElementById("filter-chips");
 
 let reasons = [];
 let reasonById = {};
@@ -42,13 +43,40 @@ const getFilteredReasons = () => {
   });
 };
 
-const updateMeta = () => {
-  const filtered = getFilteredReasons();
-  if (filtered.length === reasons.length) {
-    metaEl.innerHTML = `${reasons.length} reasons ready.`;
+const hasActiveFilters = () =>
+  Boolean(typeSelect.value || toneSelect.value || topicSelect.value);
+
+const updateChips = () => {
+  filterChips.innerHTML = "";
+  if (!hasActiveFilters() || filters.classList.contains("open")) {
+    filterChips.classList.remove("show");
     return;
   }
-  metaEl.innerHTML = `${reasons.length} reasons ready.<br>${filtered.length} match filters.`;
+
+  const chips = [
+    typeSelect.value && `Type: ${typeSelect.options[typeSelect.selectedIndex].textContent}`,
+    toneSelect.value && `Tone: ${toneSelect.options[toneSelect.selectedIndex].textContent}`,
+    topicSelect.value && `Topic: ${topicSelect.options[topicSelect.selectedIndex].textContent}`,
+  ].filter(Boolean);
+
+  chips.forEach((label) => {
+    const chip = document.createElement("span");
+    chip.className = "chip";
+    chip.textContent = label;
+    filterChips.appendChild(chip);
+  });
+  filterChips.classList.add("show");
+};
+
+const updateMeta = () => {
+  const filtered = getFilteredReasons();
+  clearFiltersButton.disabled = !hasActiveFilters();
+  if (filtered.length === reasons.length) {
+    metaEl.innerHTML = `${reasons.length} reasons loaded.`;
+    return;
+  }
+  const matchesText = filtered.length === 1 ? "1 matching reason" : `${filtered.length} matching reasons`;
+  metaEl.innerHTML = `${reasons.length} reasons loaded.<br>${matchesText}.`;
 };
 
 const pickReason = () => {
@@ -60,7 +88,7 @@ const pickReason = () => {
   const candidates = getFilteredReasons();
   if (!candidates.length) {
     currentId = "";
-    reasonEl.textContent = "No reasons match those filters.";
+    reasonEl.textContent = "No reasons match those filters. Try clearing them.";
     return;
   }
 
@@ -94,6 +122,7 @@ const loadReasons = async () => {
     }, {});
     updateFilters();
     updateMeta();
+    updateChips();
     if (!applyReasonFromId()) {
       pickReason();
     }
@@ -118,6 +147,7 @@ const loadReasons = async () => {
     ];
     reasonById = {};
     updateFilters();
+    updateChips();
     metaEl.textContent = "Offline fallback mode.";
     pickReason();
   }
@@ -219,16 +249,19 @@ sharePageButton.addEventListener("click", sharePage);
 typeSelect.addEventListener("change", () => {
   clearStatus();
   updateMeta();
+  updateChips();
   pickReason();
 });
 toneSelect.addEventListener("change", () => {
   clearStatus();
   updateMeta();
+  updateChips();
   pickReason();
 });
 topicSelect.addEventListener("change", () => {
   clearStatus();
   updateMeta();
+  updateChips();
   pickReason();
 });
 clearFiltersButton.addEventListener("click", () => {
@@ -237,12 +270,14 @@ clearFiltersButton.addEventListener("click", () => {
   topicSelect.value = "";
   clearStatus();
   updateMeta();
+  updateChips();
   pickReason();
 });
 
 filterToggle.addEventListener("click", () => {
   const isOpen = filters.classList.toggle("open");
   filterToggle.setAttribute("aria-expanded", String(isOpen));
+  updateChips();
 });
 
 const updateFilters = () => {

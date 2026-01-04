@@ -20,10 +20,11 @@
         <h1 class="title">A polite, playful "no"</h1>
         <div class="accordion-wrap">
           <button class="accordion" id="filter-toggle" aria-expanded="false">
-            Currate Your No
+            Curate Your No
             <span class="accordion-icon" aria-hidden="true"></span>
           </button>
         </div>
+        <div class="filter-chips" id="filter-chips"></div>
         <div class="filters" id="filters">
           <label class="filter">
             <span>Type</span>
@@ -37,7 +38,7 @@
             <span>Topic</span>
             <select id="filter-topic" class="select-glaze"></select>
           </label>
-          <button class="btn ghost small" id="clear-filters">Clear</button>
+          <button class="btn ghost small" id="clear-filters">Clear filters</button>
         </div>
 
         <div class="reason" id="reason">
@@ -47,8 +48,13 @@
         <div class="actions">
           <button class="btn" id="new-reason">Give me a new no</button>
           <button class="btn ghost" id="copy-reason">Copy</button>
-          <button class="btn ghost" id="share-reason">Share</button>
-          <button class="btn ghost" id="share-page">Share Page</button>
+          <details class="share-menu">
+            <summary class="btn ghost">Share</summary>
+            <div class="share-menu-panel">
+              <button class="btn ghost" type="button" id="share-reason">Share quote</button>
+              <button class="btn ghost" type="button" id="share-page">Share link</button>
+            </div>
+          </details>
         </div>
 
         <p class="status" id="status"></p>
