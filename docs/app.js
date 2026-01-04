@@ -12,6 +12,7 @@ const clearFiltersButton = document.getElementById("clear-filters");
 const filterToggle = document.getElementById("filter-toggle");
 const filters = document.getElementById("filters");
 const filterChips = document.getElementById("filter-chips");
+const shareMenu = document.querySelector(".share-menu");
 
 let reasons = [];
 let reasonById = {};
@@ -278,6 +279,21 @@ filterToggle.addEventListener("click", () => {
   const isOpen = filters.classList.toggle("open");
   filterToggle.setAttribute("aria-expanded", String(isOpen));
   updateChips();
+});
+
+document.addEventListener("click", (event) => {
+  if (!shareMenu || !shareMenu.hasAttribute("open")) {
+    return;
+  }
+  if (!shareMenu.contains(event.target)) {
+    shareMenu.removeAttribute("open");
+  }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && shareMenu?.hasAttribute("open")) {
+    shareMenu.removeAttribute("open");
+  }
 });
 
 const updateFilters = () => {
