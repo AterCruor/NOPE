@@ -5,14 +5,12 @@ const newButton = document.getElementById("new-reason");
 const copyButton = document.getElementById("copy-reason");
 const shareButton = document.getElementById("share-reason");
 const sharePageButton = document.getElementById("share-page");
-const typeSelect = document.getElementById("filter-type");
-const toneSelect = document.getElementById("filter-tone");
-const topicSelect = document.getElementById("filter-topic");
 const clearFiltersButton = document.getElementById("clear-filters");
 const filterToggle = document.getElementById("filter-toggle");
 const filters = document.getElementById("filters");
 const filterChips = document.getElementById("filter-chips");
 const shareMenu = document.querySelector(".share-menu");
+const multiSelects = Array.from(document.querySelectorAll(".multi-select"));
 
 let reasons = [];
 let reasonById = {};
@@ -26,18 +24,39 @@ const clearStatus = () => {
   statusEl.textContent = "";
 };
 
+const formatLabel = (value) =>
+  value
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+
+const getSelectedValues = (key) => {
+  const select = multiSelects.find((item) => item.dataset.key === key);
+  if (!select) {
+    return [];
+  }
+  return Array.from(select.querySelectorAll("input[type='checkbox']:checked"))
+    .map((input) => input.value)
+    .filter(Boolean);
+};
+
 const getFilteredReasons = () => {
-  const type = typeSelect.value;
-  const tone = toneSelect.value;
-  const topic = topicSelect.value;
+  const types = getSelectedValues("type");
+  const tones = getSelectedValues("tone");
+  const topics = getSelectedValues("topic");
+  const tags = getSelectedValues("tag");
+
   return reasons.filter((entry) => {
-    if (type && entry.type !== type) {
+    if (types.length && !types.includes(entry.type)) {
       return false;
     }
-    if (tone && entry.tone !== tone) {
+    if (tones.length && !tones.includes(entry.tone)) {
       return false;
     }
-    if (topic && entry.topic !== topic) {
+    if (topics.length && !topics.includes(entry.topic)) {
+      return false;
+    }
+    if (tags.length && !tags.some((tag) => entry.tags.includes(tag))) {
       return false;
     }
     return true;
@@ -45,7 +64,12 @@ const getFilteredReasons = () => {
 };
 
 const hasActiveFilters = () =>
-  Boolean(typeSelect.value || toneSelect.value || topicSelect.value);
+  Boolean(
+    getSelectedValues("type").length ||
+      getSelectedValues("tone").length ||
+      getSelectedValues("topic").length ||
+      getSelectedValues("tag").length
+  );
 
 const updateChips = () => {
   filterChips.innerHTML = "";
@@ -54,11 +78,19 @@ const updateChips = () => {
     return;
   }
 
-  const chips = [
-    typeSelect.value && `Type: ${typeSelect.options[typeSelect.selectedIndex].textContent}`,
-    toneSelect.value && `Tone: ${toneSelect.options[toneSelect.selectedIndex].textContent}`,
-    topicSelect.value && `Topic: ${topicSelect.options[topicSelect.selectedIndex].textContent}`,
-  ].filter(Boolean);
+  const chips = [];
+  const buildChip = (key, label) => {
+    const values = getSelectedValues(key);
+    if (!values.length) {
+      return;
+    }
+    chips.push(`${label}: ${values.map(formatLabel).join(", ")}`);
+  };
+
+  buildChip("type", "Type");
+  buildChip("tone", "Tone");
+  buildChip("topic", "Topic");
+  buildChip("tag", "Tag");
 
   chips.forEach((label) => {
     const chip = document.createElement("span");
@@ -76,7 +108,8 @@ const updateMeta = () => {
     metaEl.innerHTML = `${reasons.length} reasons loaded.`;
     return;
   }
-  const matchesText = filtered.length === 1 ? "1 matching reason" : `${filtered.length} matching reasons`;
+  const matchesText =
+    filtered.length === 1 ? "1 matching reason" : `${filtered.length} matching reasons`;
   metaEl.innerHTML = `${reasons.length} reasons loaded.<br>${matchesText}.`;
 };
 
@@ -108,6 +141,60 @@ const applyReasonFromId = () => {
   currentId = id;
   reasonEl.textContent = reasonById[id].reason;
   return true;
+};
+
+const updateToggleLabel = (select) => {
+  const values = Array.from(
+    select.querySelectorAll("input[type='checkbox']:checked")
+  ).map((input) => formatLabel(input.value));
+  const toggle = select.querySelector(".multi-toggle");
+  if (!values.length) {
+    toggle.textContent = "Any";
+    return;
+  }
+  toggle.textContent = values.length === 1 ? values[0] : `${values.length} selected`;
+};
+
+const updateFilters = () => {
+  const unique = (key) =>
+    Array.from(new Set(reasons.map((entry) => entry[key]).filter(Boolean))).sort();
+  const tagValues = Array.from(
+    new Set(reasons.flatMap((entry) => entry.tags || []).filter(Boolean))
+  ).sort();
+
+  const buildOptions = (key, values) => {
+    const select = multiSelects.find((item) => item.dataset.key === key);
+    if (!select) {
+      return;
+    }
+    const panel = select.querySelector(".multi-panel");
+    panel.innerHTML = "";
+    values.forEach((value) => {
+      const label = document.createElement("label");
+      label.className = "multi-option";
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.value = value;
+      checkbox.addEventListener("change", () => {
+        updateMeta();
+        updateChips();
+        pickReason();
+        updateToggleLabel(select);
+      });
+      const text = document.createElement("span");
+      text.textContent = formatLabel(value);
+      label.appendChild(checkbox);
+      label.appendChild(text);
+      panel.appendChild(label);
+    });
+  };
+
+  buildOptions("type", unique("type"));
+  buildOptions("tone", unique("tone"));
+  buildOptions("topic", unique("topic"));
+  buildOptions("tag", tagValues);
+
+  multiSelects.forEach(updateToggleLabel);
 };
 
 const loadReasons = async () => {
@@ -247,28 +334,13 @@ copyButton.addEventListener("click", () => {
 });
 shareButton.addEventListener("click", shareReason);
 sharePageButton.addEventListener("click", sharePage);
-typeSelect.addEventListener("change", () => {
-  clearStatus();
-  updateMeta();
-  updateChips();
-  pickReason();
-});
-toneSelect.addEventListener("change", () => {
-  clearStatus();
-  updateMeta();
-  updateChips();
-  pickReason();
-});
-topicSelect.addEventListener("change", () => {
-  clearStatus();
-  updateMeta();
-  updateChips();
-  pickReason();
-});
 clearFiltersButton.addEventListener("click", () => {
-  typeSelect.value = "";
-  toneSelect.value = "";
-  topicSelect.value = "";
+  multiSelects.forEach((select) => {
+    select.querySelectorAll("input[type='checkbox']").forEach((input) => {
+      input.checked = false;
+    });
+    updateToggleLabel(select);
+  });
   clearStatus();
   updateMeta();
   updateChips();
@@ -281,45 +353,32 @@ filterToggle.addEventListener("click", () => {
   updateChips();
 });
 
+multiSelects.forEach((select) => {
+  const toggle = select.querySelector(".multi-toggle");
+  toggle.addEventListener("click", (event) => {
+    event.stopPropagation();
+    select.classList.toggle("open");
+  });
+});
+
 document.addEventListener("click", (event) => {
-  if (!shareMenu || !shareMenu.hasAttribute("open")) {
-    return;
-  }
-  if (!shareMenu.contains(event.target)) {
+  if (shareMenu && shareMenu.hasAttribute("open") && !shareMenu.contains(event.target)) {
     shareMenu.removeAttribute("open");
   }
+  multiSelects.forEach((select) => {
+    if (select.classList.contains("open") && !select.contains(event.target)) {
+      select.classList.remove("open");
+    }
+  });
 });
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && shareMenu?.hasAttribute("open")) {
-    shareMenu.removeAttribute("open");
+  if (event.key === "Escape") {
+    if (shareMenu?.hasAttribute("open")) {
+      shareMenu.removeAttribute("open");
+    }
+    multiSelects.forEach((select) => select.classList.remove("open"));
   }
 });
-
-const updateFilters = () => {
-  const unique = (key) =>
-    Array.from(new Set(reasons.map((entry) => entry[key]).filter(Boolean))).sort();
-
-  const setOptions = (select, options) => {
-    select.innerHTML = "";
-    const anyOption = document.createElement("option");
-    anyOption.value = "";
-    anyOption.textContent = "Any";
-    select.appendChild(anyOption);
-    options.forEach((value) => {
-      const option = document.createElement("option");
-      option.value = value;
-      option.textContent = value
-        .split("-")
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join(" ");
-      select.appendChild(option);
-    });
-  };
-
-  setOptions(typeSelect, unique("type"));
-  setOptions(toneSelect, unique("tone"));
-  setOptions(topicSelect, unique("topic"));
-};
 
 loadReasons();

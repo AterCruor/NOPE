@@ -26,18 +26,34 @@
         </div>
         <div class="filter-chips" id="filter-chips"></div>
         <div class="filters" id="filters">
-          <label class="filter">
+          <div class="filter">
             <span>Type</span>
-            <select id="filter-type" class="select-glaze"></select>
-          </label>
-          <label class="filter">
+            <div class="multi-select" data-key="type">
+              <button class="multi-toggle" type="button">Any</button>
+              <div class="multi-panel"></div>
+            </div>
+          </div>
+          <div class="filter">
             <span>Tone</span>
-            <select id="filter-tone" class="select-glaze"></select>
-          </label>
-          <label class="filter">
+            <div class="multi-select" data-key="tone">
+              <button class="multi-toggle" type="button">Any</button>
+              <div class="multi-panel"></div>
+            </div>
+          </div>
+          <div class="filter">
             <span>Topic</span>
-            <select id="filter-topic" class="select-glaze"></select>
-          </label>
+            <div class="multi-select" data-key="topic">
+              <button class="multi-toggle" type="button">Any</button>
+              <div class="multi-panel"></div>
+            </div>
+          </div>
+          <div class="filter">
+            <span>Tag</span>
+            <div class="multi-select" data-key="tag">
+              <button class="multi-toggle" type="button">Any</button>
+              <div class="multi-panel"></div>
+            </div>
+          </div>
           <button class="btn ghost small" id="clear-filters">Clear filters</button>
         </div>
 
