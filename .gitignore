@@ -6,3 +6,6 @@ data/reasonsBasic.json
 data/reasonsPhrase.json
 data/reasonsToken.json
 data/reasonsOverkill.json
+Dockerfile.api
+Dockerfile.bot
+docker-compose.yml

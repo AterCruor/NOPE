@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const inputPath = path.join(__dirname, "..", "data", "reasonsBasic.json");
+const inputPath = path.join(__dirname, "..", "data", "reasons.json");
 const outputPath =
   process.env.LABEL_OUTPUT ||
   path.join(__dirname, "..", "data", "reasonsOpenAI.json");

@@ -54,6 +54,24 @@ Use it in apps, bots, landing pages, Slack integrations, rejection letters, or w
 
 Want to run it yourself? It’s lightweight and simple.
 
+### Docker (API)
+```bash
+docker build -f Dockerfile.api -t naas-api .
+docker run -p 3000:3000 naas-api
+```
+
+### Docker (Bot)
+```bash
+docker build -f Dockerfile.bot -t naas-bot .
+docker run -e DISCORD_TOKEN=your-token naas-bot
+```
+
+### Docker Compose (API + Bot)
+Create a `.env` with `DISCORD_TOKEN` (and optional `DISCORD_CLIENT_ID`, `DISCORD_GUILD_ID`), then:
+```bash
+docker compose up --build
+```
+
 ### 1. Clone this repository
 ```bash
 git clone https://github.com/hotheadhacker/no-as-a-service.git

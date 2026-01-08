@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const inputPath = path.join(__dirname, "..", "data", "reasonsBasic.json");
+const inputPath = path.join(__dirname, "..", "data", "reasons.json");
 const outputPath = path.join(__dirname, "..", "data", "reasonsPhrase.json");
 
 const reasons = JSON.parse(fs.readFileSync(inputPath, "utf8"));

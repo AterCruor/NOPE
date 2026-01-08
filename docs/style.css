@@ -221,6 +221,12 @@ body {
   color: rgba(30, 26, 23, 0.85);
 }
 
+.multi-option:focus-within {
+  outline: 2px solid rgba(229, 90, 42, 0.35);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
 .multi-option.disabled {
   opacity: 0.5;
 }

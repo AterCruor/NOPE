@@ -9,9 +9,16 @@ app.use(cors());
 app.set('trust proxy', true);
 const PORT = process.env.PORT || 3000;
 
-// Load reasons from JSON
+// Load reasons from JSON (read on demand so edits are picked up without restart)
 const reasonsPath = path.join(__dirname, 'data', 'reasons.json');
-const reasons = JSON.parse(fs.readFileSync(reasonsPath, 'utf-8'));
+const loadReasons = () => {
+  try {
+    return JSON.parse(fs.readFileSync(reasonsPath, 'utf-8'));
+  } catch (error) {
+    console.error("Failed to load reasons.json:", error.message);
+    return [];
+  }
+};
 
 // Rate limiter: 120 requests per minute per IP
 const limiter = rateLimit({
@@ -29,32 +36,46 @@ const parseList = (value) =>
   value
     ? value
         .split(",")
-        .map((item) => item.trim())
+        .map((item) => item.trim().toLowerCase())
         .filter(Boolean)
     : [];
+
+const safeLower = (value) => String(value || "").toLowerCase();
 
 const pickRandom = (list) => list[Math.floor(Math.random() * list.length)];
 
 // Random rejection reason endpoint (string only)
 app.get('/no', (req, res) => {
+  const reasons = loadReasons();
+  if (!reasons.length) {
+    return res.json({ reason: "No reasons available right now." });
+  }
   const entry = pickRandom(reasons);
   res.json({ reason: entry.reason });
 });
 
 // Filtered rejection reason endpoint (string only)
 app.get('/no/rich', (req, res) => {
+  const reasons = loadReasons();
+  if (!reasons.length) {
+    return res.json({ reason: "No reasons available right now." });
+  }
   const types = parseList(req.query.type);
   const tones = parseList(req.query.tone);
   const topics = parseList(req.query.topic);
 
   const filtered = reasons.filter((entry) => {
-    if (types.length && !types.includes(entry.type)) {
+    const entryType = safeLower(entry.type);
+    const entryTone = safeLower(entry.tone);
+    const entryTopic = safeLower(entry.topic);
+
+    if (types.length && !types.includes(entryType)) {
       return false;
     }
-    if (tones.length && !tones.includes(entry.tone)) {
+    if (tones.length && !tones.includes(entryTone)) {
       return false;
     }
-    if (topics.length && !topics.includes(entry.topic)) {
+    if (topics.length && !topics.includes(entryTopic)) {
       return false;
     }
     return true;

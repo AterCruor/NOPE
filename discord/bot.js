@@ -17,10 +17,28 @@ if (!token) {
 }
 
 const reasonsPath = path.join(__dirname, "..", "data", "reasons.json");
-const reasons = JSON.parse(fs.readFileSync(reasonsPath, "utf8"));
+let reasons = [];
+const userCooldowns = new Map();
+const USER_COOLDOWN_MS = 10 * 1000;
 
-const getNoReason = () =>
-  reasons[Math.floor(Math.random() * reasons.length)];
+const loadReasons = () => {
+  try {
+    reasons = JSON.parse(fs.readFileSync(reasonsPath, "utf8"));
+  } catch (error) {
+    console.error("Failed to load reasons.json:", error.message);
+  }
+};
+
+loadReasons();
+setInterval(loadReasons, 3 * 24 * 60 * 60 * 1000);
+
+const getNoReason = () => {
+  if (!reasons.length) {
+    console.warn("No reasons loaded; serving fallback.");
+    return "No reasons available right now.";
+  }
+  return reasons[Math.floor(Math.random() * reasons.length)].reason;
+};
 
 const client = new Client({
   intents: [
@@ -60,6 +78,12 @@ client.on(Events.MessageCreate, async (message) => {
   }
 
   if (message.mentions.has(client.user)) {
+    const lastUsed = userCooldowns.get(message.author.id) || 0;
+    if (Date.now() - lastUsed < USER_COOLDOWN_MS) {
+      return;
+    }
+    userCooldowns.set(message.author.id, Date.now());
+
     const reason = getNoReason();
     await message.reply({
       content: reason,

@@ -16,6 +16,13 @@ const multiSelects = Array.from(document.querySelectorAll(".multi-select"));
 let reasons = [];
 let reasonById = {};
 let currentId = "";
+let lastSelectToggle = null;
+
+const formatLabel = (value) =>
+  value
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 
 const setStatus = (message) => {
   statusEl.textContent = message;
@@ -25,11 +32,15 @@ const clearStatus = () => {
   statusEl.textContent = "";
 };
 
-const formatLabel = (value) =>
-  value
-    .split("-")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+const setWarning = (message) => {
+  if (!message) {
+    filterWarning.textContent = "";
+    filterWarning.classList.remove("show");
+    return;
+  }
+  filterWarning.textContent = message;
+  filterWarning.classList.add("show");
+};
 
 const getSelectedValues = (key) => {
   const select = multiSelects.find((item) => item.dataset.key === key);
@@ -40,6 +51,14 @@ const getSelectedValues = (key) => {
     .map((input) => input.value)
     .filter(Boolean);
 };
+
+const hasActiveFilters = () =>
+  Boolean(
+    getSelectedValues("type").length ||
+      getSelectedValues("tone").length ||
+      getSelectedValues("topic").length ||
+      getSelectedValues("tag").length
+  );
 
 const getFilteredReasons = () => {
   const types = getSelectedValues("type");
@@ -57,20 +76,13 @@ const getFilteredReasons = () => {
     if (topics.length && !topics.includes(entry.topic)) {
       return false;
     }
-    if (tags.length && !tags.some((tag) => entry.tags.includes(tag))) {
+    const entryTags = entry.tags || [];
+    if (tags.length && !tags.some((tag) => entryTags.includes(tag))) {
       return false;
     }
     return true;
   });
 };
-
-const hasActiveFilters = () =>
-  Boolean(
-    getSelectedValues("type").length ||
-      getSelectedValues("tone").length ||
-      getSelectedValues("topic").length ||
-      getSelectedValues("tag").length
-  );
 
 const updateChips = () => {
   filterChips.innerHTML = "";
@@ -102,26 +114,20 @@ const updateChips = () => {
   filterChips.classList.add("show");
 };
 
-const setWarning = (message) => {
-  if (!message) {
-    filterWarning.textContent = "";
-    filterWarning.classList.remove("show");
-    return;
-  }
-  filterWarning.textContent = message;
-  filterWarning.classList.add("show");
-};
-
 const updateMeta = () => {
   const filtered = getFilteredReasons();
   clearFiltersButton.disabled = !hasActiveFilters();
+  metaEl.textContent = "";
+  metaEl.appendChild(document.createTextNode(`${reasons.length} reasons loaded.`));
   if (filtered.length === reasons.length) {
-    metaEl.innerHTML = `${reasons.length} reasons loaded.`;
     return;
   }
   const matchesText =
     filtered.length === 1 ? "1 matching reason" : `${filtered.length} matching reasons`;
-  metaEl.innerHTML = `${reasons.length} reasons loaded.<br>${matchesText}.`;
+  metaEl.appendChild(document.createElement("br"));
+  const matchSpan = document.createElement("span");
+  matchSpan.textContent = `${matchesText}.`;
+  metaEl.appendChild(matchSpan);
 };
 
 const pickReason = () => {
@@ -159,6 +165,11 @@ const updateToggleLabel = (select) => {
     select.querySelectorAll("input[type='checkbox']:checked")
   ).map((input) => formatLabel(input.value));
   const toggle = select.querySelector(".multi-toggle");
+  const panelId = select.dataset.panel;
+  if (panelId) {
+    toggle.setAttribute("aria-controls", panelId);
+  }
+  toggle.setAttribute("aria-expanded", String(select.classList.contains("open")));
   if (!values.length) {
     toggle.textContent = "Any";
     return;
@@ -192,7 +203,8 @@ const wouldMatch = (key, value) => {
     if (topics.size && !topics.has(entry.topic)) {
       return false;
     }
-    if (tags.size && !Array.from(tags).some((tag) => entry.tags.includes(tag))) {
+    const entryTags = entry.tags || [];
+    if (tags.size && !Array.from(tags).some((tag) => entryTags.includes(tag))) {
       return false;
     }
     return true;
@@ -208,6 +220,7 @@ const updateOptionAvailability = () => {
       const allowed = wouldMatch(key, input.value);
       input.disabled = !allowed;
       label.classList.toggle("disabled", !allowed);
+      label.setAttribute("aria-disabled", String(!allowed));
       if (!allowed && input.checked) {
         invalidSelected = true;
       }
@@ -221,40 +234,47 @@ const updateOptionAvailability = () => {
   }
 };
 
+const refreshUI = () => {
+  updateMeta();
+  updateChips();
+  updateOptionAvailability();
+  pickReason();
+};
+
+const buildOptions = (key, values) => {
+  const select = multiSelects.find((item) => item.dataset.key === key);
+  if (!select) {
+    return;
+  }
+  const panel = select.querySelector(".multi-panel");
+  panel.innerHTML = "";
+  values.forEach((value) => {
+    const label = document.createElement("label");
+    label.className = "multi-option";
+    label.setAttribute("role", "option");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = value;
+    checkbox.setAttribute("aria-checked", "false");
+    checkbox.addEventListener("change", () => {
+      checkbox.setAttribute("aria-checked", String(checkbox.checked));
+      updateToggleLabel(select);
+      refreshUI();
+    });
+    const text = document.createElement("span");
+    text.textContent = formatLabel(value);
+    label.appendChild(checkbox);
+    label.appendChild(text);
+    panel.appendChild(label);
+  });
+};
+
 const updateFilters = () => {
   const unique = (key) =>
     Array.from(new Set(reasons.map((entry) => entry[key]).filter(Boolean))).sort();
   const tagValues = Array.from(
     new Set(reasons.flatMap((entry) => entry.tags || []).filter(Boolean))
   ).sort();
-
-  const buildOptions = (key, values) => {
-    const select = multiSelects.find((item) => item.dataset.key === key);
-    if (!select) {
-      return;
-    }
-    const panel = select.querySelector(".multi-panel");
-    panel.innerHTML = "";
-    values.forEach((value) => {
-      const label = document.createElement("label");
-      label.className = "multi-option";
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.value = value;
-      checkbox.addEventListener("change", () => {
-        updateMeta();
-        updateChips();
-        pickReason();
-        updateToggleLabel(select);
-        updateOptionAvailability();
-      });
-      const text = document.createElement("span");
-      text.textContent = formatLabel(value);
-      label.appendChild(checkbox);
-      label.appendChild(text);
-      panel.appendChild(label);
-    });
-  };
 
   buildOptions("type", unique("type"));
   buildOptions("tone", unique("tone"));
@@ -392,6 +412,51 @@ const sharePage = async () => {
   }
 };
 
+const closeOtherSelects = (current) => {
+  multiSelects.forEach((select) => {
+    if (select !== current && select.classList.contains("open")) {
+      select.classList.remove("open");
+      const otherToggle = select.querySelector(".multi-toggle");
+      otherToggle?.setAttribute("aria-expanded", "false");
+    }
+  });
+};
+
+const closeAllSelects = () => {
+  multiSelects.forEach((select) => {
+    if (select.classList.contains("open")) {
+      select.classList.remove("open");
+      const toggle = select.querySelector(".multi-toggle");
+      toggle?.setAttribute("aria-expanded", "false");
+    }
+  });
+};
+
+const handleDropdownKeys = (event) => {
+  const activeSelect = multiSelects.find((select) =>
+    select.classList.contains("open")
+  );
+  if (!activeSelect) {
+    return;
+  }
+  const checkboxes = Array.from(activeSelect.querySelectorAll("input[type='checkbox']"));
+  const currentIndex = checkboxes.indexOf(document.activeElement);
+  if (event.key === "ArrowDown") {
+    event.preventDefault();
+    const next = checkboxes[currentIndex + 1] || checkboxes[0];
+    next?.focus();
+  } else if (event.key === "ArrowUp") {
+    event.preventDefault();
+    const prev = checkboxes[currentIndex - 1] || checkboxes[checkboxes.length - 1];
+    prev?.focus();
+  } else if (event.key === " " || event.key === "Enter") {
+    if (document.activeElement?.type === "checkbox") {
+      event.preventDefault();
+      document.activeElement.click();
+    }
+  }
+};
+
 newButton.addEventListener("click", () => {
   clearStatus();
   pickReason();
@@ -406,14 +471,12 @@ clearFiltersButton.addEventListener("click", () => {
   multiSelects.forEach((select) => {
     select.querySelectorAll("input[type='checkbox']").forEach((input) => {
       input.checked = false;
+      input.setAttribute("aria-checked", "false");
     });
     updateToggleLabel(select);
   });
   clearStatus();
-  updateMeta();
-  updateChips();
-  updateOptionAvailability();
-  pickReason();
+  refreshUI();
 });
 
 filterToggle.addEventListener("click", () => {
@@ -426,12 +489,14 @@ multiSelects.forEach((select) => {
   const toggle = select.querySelector(".multi-toggle");
   toggle.addEventListener("click", (event) => {
     event.stopPropagation();
-    multiSelects.forEach((other) => {
-      if (other !== select) {
-        other.classList.remove("open");
-      }
-    });
+    closeOtherSelects(select);
     select.classList.toggle("open");
+    toggle.setAttribute("aria-expanded", String(select.classList.contains("open")));
+    if (select.classList.contains("open")) {
+      lastSelectToggle = toggle;
+      const firstCheckbox = select.querySelector("input[type='checkbox']");
+      firstCheckbox?.focus();
+    }
   });
 });
 
@@ -439,20 +504,23 @@ document.addEventListener("click", (event) => {
   if (shareMenu && shareMenu.hasAttribute("open") && !shareMenu.contains(event.target)) {
     shareMenu.removeAttribute("open");
   }
-  multiSelects.forEach((select) => {
-    if (select.classList.contains("open") && !select.contains(event.target)) {
-      select.classList.remove("open");
-    }
-  });
+  if (!filters.contains(event.target)) {
+    closeAllSelects();
+  }
 });
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     if (shareMenu?.hasAttribute("open")) {
       shareMenu.removeAttribute("open");
+      const shareToggle = shareMenu.querySelector("summary");
+      shareToggle?.focus();
     }
-    multiSelects.forEach((select) => select.classList.remove("open"));
+    closeAllSelects();
+    lastSelectToggle?.focus();
+    return;
   }
+  handleDropdownKeys(event);
 });
 
 loadReasons();

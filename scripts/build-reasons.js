@@ -17,6 +17,7 @@ const normalizeReason = (item) => {
   }
 
   return {
+    ...base,
     id: base.id || hashReason(base.reason),
     reason: base.reason,
     type: base.type || "general",

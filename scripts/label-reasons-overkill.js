@@ -4,8 +4,8 @@ const winkNLP = require("wink-nlp");
 const model = require("wink-eng-lite-web-model");
 const Sentiment = require("sentiment");
 
-const inputPath = path.join(__dirname, "..", "data", "reasonsBasic.json");
-const outputPath = path.join(__dirname, "..", "data", "reasonsOverkill.json");
+const inputPath = path.join(__dirname, "..", "data", "reasons.json");
+const outputPath = path.join(__dirname, "..", "data", "reasons.json");
 
 const reasons = JSON.parse(fs.readFileSync(inputPath, "utf8"));
 
