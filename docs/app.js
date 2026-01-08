@@ -426,6 +426,11 @@ multiSelects.forEach((select) => {
   const toggle = select.querySelector(".multi-toggle");
   toggle.addEventListener("click", (event) => {
     event.stopPropagation();
+    multiSelects.forEach((other) => {
+      if (other !== select) {
+        other.classList.remove("open");
+      }
+    });
     select.classList.toggle("open");
   });
 });
